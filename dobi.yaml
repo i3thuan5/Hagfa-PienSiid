@@ -1,0 +1,87 @@
+meta:
+    project: Hagfa-k2
+
+# alias=qionpu: # 全部
+#   tasks: [hazoi-ngiliau, don-ngiliau, zunpi-ngiliau, hiunlien, ]
+  # tasks: [hazoi-ngiliau, don-ngiliau, zunpi-ngiliau, hiunlien, ]
+
+job=hazoi-ngiliau: # 下載語料
+  use: k2-docker
+  command: |
+    bash -eux -c '
+      python nginziin.py
+    '
+  mounts: [ngienbun_ngiliau, ]
+# job=hazoi-ngiliau: # 下載語料
+#   use: hazoi_docker
+#   command: |
+#     bash -eux -c '
+#       python nginziin.py
+#     '
+#   mounts: [ngienbun_ngiliau, ]
+
+# job=don-ngiliau: # 斷詞斷字語料
+#   use: hazoi_docker
+#   command: |
+#     bash -eux -c '
+#       cat /ngienbun-ngiliau/meu.txt | sed "s/\(.\)/\1 /g" \
+#         | head -n 500 > /doncii-ngiliau/meu.valid
+#       cat /ngienbun-ngiliau/meu.txt | sed "s/\(.\)/\1 /g" \
+#         | tail -n +501 > /doncii-ngiliau/meu.train
+#       cat /ngienbun-ngiliau/fa.txt  | sed "s/\(.\)/\1 /g" \
+#         | head -n 500 > /doncii-ngiliau/fa.valid
+#       cat /ngienbun-ngiliau/fa.txt  | sed "s/\(.\)/\1 /g" \
+#         | tail -n +501 > /doncii-ngiliau/fa.train
+#     '
+#   mounts: [ngienbun_ngiliau, doncii_ngiliau, ]
+
+# mount=ngienbun_ngiliau: # 原本語料
+#   bind: ./1-ngienbun-ngiliau/
+#   path: /ngienbun-ngiliau/
+
+# mount=doncii_ngiliau: # 斷詞語料
+#   bind: ./2-doncii-ngiliau/
+#   path: /doncii-ngiliau/
+
+# mount=opennmt_data:
+#   bind: ./3-opennmt-data/
+#   path: /data/
+
+# mount=opennmt_model:
+#   bind: ./4-opennmt-model/
+#   path: /model/
+
+image=k2-docker:
+  image: k2-docker
+  context: k2-docker
+
+# image=opennmt_docker:
+#   image: opennmt-docker
+#   context: opennmt-docker
+
+# job=zunpi-ngiliau: # 準備語料
+#   use: opennmt_docker
+#   command: |
+#     bash -eux -c '
+#       onmt_build_vocab -config tin.yaml -n_sample -1
+#     '
+#   mounts: [doncii_ngiliau, opennmt_data]
+
+# job=hiunlien: # 訓練
+#   use: opennmt_docker
+#   command: |
+#     bash -eux -c '
+#       onmt_train -config tin.yaml
+#     '
+#   mounts: [doncii_ngiliau, opennmt_data, opennmt_model]
+
+# job=fan:
+#   use: opennmt_docker
+#   command: |
+#     bash -eux -c '
+#       echo "我 打 籃 球 時 手 扭 傷 ， 醫 生 說 要 打 石 膏 。" >> fa.txt
+#       echo "黃 槿 樹 的 葉 子 ， 一 片 差 不 多 手 掌 一 般 大 。" >> fa.txt
+#       onmt_translate -model /model/fameu_step_3000.pt -src fa.txt -output pred-meu.txt -replace_unk -verbose
+#       cat pred-meu.txt
+#     '
+#   mounts: [opennmt_data, opennmt_model]
