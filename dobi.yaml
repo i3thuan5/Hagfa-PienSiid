@@ -9,9 +9,10 @@ job=hazoi-ngiliau: # 下載語料
   use: k2-docker
   command: |
     bash -eux -c '
-      python nginziin.py
+      nvidia-smi
     '
-  mounts: [ngienbun_ngiliau, ]
+  # mounts: [ngienbun_ngiliau, ]
+
 # job=hazoi-ngiliau: # 下載語料
 #   use: hazoi_docker
 #   command: |
