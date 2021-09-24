@@ -3,23 +3,22 @@ meta:
 
 # alias=qionpu: # 全部
 #   tasks: [hazoi-ngiliau, don-ngiliau, zunpi-ngiliau, hiunlien, ]
-  # tasks: [hazoi-ngiliau, don-ngiliau, zunpi-ngiliau, hiunlien, ]
+
 
 job=hazoi-ngiliau: # 下載語料
-  use: k2-docker
+  use: hazoi-docker
+  env:
+  - GAU=https://www.dropbox.com/s/gs6gk8zuehxbqti/moe-hakka-sound.tar?dl=0
+  - FI=https://www.dropbox.com/s/6643qa843bb6tjf/Elearning-Hakka-202102.tar?dl=0
   command: |
     bash -eux -c '
-      nvidia-smi
+      if [ ! -d /ngienbun-ngiliau/nginciin/ ]
+      then
+        wget $GAU -O - | tar -zxvf -
+        mv corpus /ngienbun-ngiliau/nginciin
+      fi
     '
-  # mounts: [ngienbun_ngiliau, ]
-
-# job=hazoi-ngiliau: # 下載語料
-#   use: hazoi_docker
-#   command: |
-#     bash -eux -c '
-#       python nginziin.py
-#     '
-#   mounts: [ngienbun_ngiliau, ]
+  mounts: [ngienbun-ngiliau, ]
 
 # job=don-ngiliau: # 斷詞斷字語料
 #   use: hazoi_docker
@@ -36,9 +35,9 @@ job=hazoi-ngiliau: # 下載語料
 #     '
 #   mounts: [ngienbun_ngiliau, doncii_ngiliau, ]
 
-# mount=ngienbun_ngiliau: # 原本語料
-#   bind: ./1-ngienbun-ngiliau/
-#   path: /ngienbun-ngiliau/
+mount=ngienbun-ngiliau: # 原本語料
+  bind: ./1-ngienbun-ngiliau/
+  path: /ngienbun-ngiliau/
 
 # mount=doncii_ngiliau: # 斷詞語料
 #   bind: ./2-doncii-ngiliau/
@@ -52,9 +51,9 @@ job=hazoi-ngiliau: # 下載語料
 #   bind: ./4-opennmt-model/
 #   path: /model/
 
-image=k2-docker:
-  image: k2-docker
-  context: k2-docker
+image=hazoi-docker:
+  image: hazoi-docker
+  context: hazoi-docker
 
 # image=opennmt_docker:
 #   image: opennmt-docker
@@ -86,3 +85,20 @@ image=k2-docker:
 #       cat pred-meu.txt
 #     '
 #   mounts: [opennmt_data, opennmt_model]
+
+
+image=ubuntu:
+  image: ubuntu
+  tags: ['20.04']
+  pull: once
+
+job=k2: # 試k2
+  use: k2-docker
+  command: |
+    bash -eux -c '
+      nvidia-smi
+    '
+
+image=k2-docker:
+  image: k2-docker
+  context: k2-docker
